@@ -535,7 +535,10 @@ gst_wavparse_perform_seek (GstWavParse * wav, GstEvent * event)
 
   if (wav->datasize > 0 && wav->end_offset > wav->datastart + wav->datasize)
     wav->end_offset = wav->datastart + wav->datasize;
-
+  
+  //TODO:: ES - Remove it, its just a workaround.
+  wav->end_offset = G_MAXUINT64;
+    
   /* this is the range of bytes we will use for playback */
   wav->offset = MIN (wav->offset, wav->end_offset);
   wav->dataleft = wav->end_offset - wav->offset;
@@ -1058,8 +1061,10 @@ parse_ds64 (GstWavParse * wav, GstBuffer * buf)
   sampleCountLow = GST_READ_UINT32_LE (map.data + 4 * 4);
   sampleCountHigh = GST_READ_UINT32_LE (map.data + 5 * 4);
   gst_buffer_unmap (buf, &map);
+   
+  //TODO:: ES - Remove this workaround  
   if (dataSizeHigh != 0xFFFFFFFF && dataSizeLow != 0xFFFFFFFF) {
-    wav->datasize = ((guint64) dataSizeHigh << 32) | dataSizeLow;
+    wav->datasize = G_MAXUINT64; //((guint64) dataSizeHigh << 32) | dataSizeLow;
   }
   if (sampleCountHigh != 0xFFFFFFFF && sampleCountLow != 0xFFFFFFFF) {
     wav->fact = ((guint64) sampleCountHigh << 32) | sampleCountLow;
@@ -1325,7 +1330,8 @@ gst_wavparse_stream_headers (GstWavParse * wav)
         else if (upstream_size) {
           size64 = MIN (size64, (upstream_size - wav->datastart));
         }
-        wav->datasize = size64;
+        //TODO:: ES - Remove this workaround 
+        wav->datasize = G_MAXUINT64;//size64;
         wav->dataleft = size64;
         wav->end_offset = size64 + wav->datastart;
         if (!wav->streaming) {
